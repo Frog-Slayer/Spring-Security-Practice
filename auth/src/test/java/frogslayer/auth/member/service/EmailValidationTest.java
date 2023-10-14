@@ -72,4 +72,12 @@ class EmailValidationTest {
         String email = "username@dom.co.m";
         assertThrows(InvalidEmailFormatException.class, () -> memberService.verifyEmailFormat(email));
     }
+
+
+    @DisplayName("제대로 된 포맷임에도 예외가 발생하지 않는지 테스트")
+    @Test
+    void testWithValidEmailFormat(){
+        String email = "username@domain.com";
+        assertDoesNotThrow(() -> memberService.verifyEmailFormat(email));
+    }
 }

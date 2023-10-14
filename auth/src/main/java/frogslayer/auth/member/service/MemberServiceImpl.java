@@ -22,7 +22,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void signUp(Member signUpInfo){
+    public void signUp(Member signUpInfo) throws InvalidEmailFormatException, InvalidPasswordFormatException, DuplicateUserException{
         String email = signUpInfo.getEmail();
         verifyEmailFormat(email);
         checkEmailDuplication(email);

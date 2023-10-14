@@ -7,9 +7,8 @@ import frogslayer.auth.member.exception.exceptions.InvalidPasswordFormatExceptio
 import frogslayer.auth.member.exception.exceptions.NoSuchUserException;
 import frogslayer.auth.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +38,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
-        //TODO
+        String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
+        if (!password.matches(regex)) throw new InvalidPasswordFormatException();
     }
 
     private void verifyEmailFormat(String email) throws InvalidEmailFormatException {
-        //TODO
+        if (email.isBlank()) throw new InvalidEmailFormatException();
+        if (!EmailValidator.getInstance().isValid(email)) throw new InvalidEmailFormatException();
     }
 
     private void checkEmailDuplication(String email) throws DuplicateUserException {

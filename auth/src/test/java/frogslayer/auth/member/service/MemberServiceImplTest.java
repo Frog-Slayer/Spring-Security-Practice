@@ -22,5 +22,11 @@ class MemberServiceImplTest {
         assertThrows(Exception.class, () -> memberService.verifyEmailFormat(email));
     }
 
+    @DisplayName("도메인 없는 이메일 가입 시도 테스트")
+    @Test
+    void testEmailValidationWithoutEmailDomain() {
+        String email = "email";
+        assertThrows(Exception.class, () -> memberService.verifyEmailFormat(email));
+    }
 
 }

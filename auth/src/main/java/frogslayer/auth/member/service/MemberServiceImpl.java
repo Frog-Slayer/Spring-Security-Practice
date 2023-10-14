@@ -24,9 +24,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void signUp(Member signUpInfo) throws InvalidEmailFormatException, InvalidPasswordFormatException, DuplicateUserException{
         String email = signUpInfo.getEmail();
+        String password = signUpInfo.getPassword();
         verifyEmailFormat(email);
         checkEmailDuplication(email);
-        verifyPasswordFormat(email);
+        verifyPasswordFormat(password);
 
         Member member = Member.builder()
                 .email(signUpInfo.getEmail())
@@ -37,17 +38,18 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
     }
 
-    private void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
-        String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
+    //최소 8자 + 최소 한개의 대소문자 + 최소 한개의 숫자 + 최소 한개의 특수 문자
+    public void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
+        String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
         if (!password.matches(regex)) throw new InvalidPasswordFormatException();
     }
 
-    private void verifyEmailFormat(String email) throws InvalidEmailFormatException {
+    public void verifyEmailFormat(String email) throws InvalidEmailFormatException {
         if (email.isBlank()) throw new InvalidEmailFormatException();
         if (!EmailValidator.getInstance().isValid(email)) throw new InvalidEmailFormatException();
     }
 
-    private void checkEmailDuplication(String email) throws DuplicateUserException {
+    public void checkEmailDuplication(String email) throws DuplicateUserException {
         if (memberRepository.existsByEmail(email)) throw new DuplicateUserException();
     }
 }

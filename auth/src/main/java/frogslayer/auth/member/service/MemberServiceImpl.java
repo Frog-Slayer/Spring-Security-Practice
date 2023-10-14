@@ -37,8 +37,9 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
     }
 
+    //최소 8자 + 최소 한개의 대소문자 + 최소 한개의 숫자 + 최소 한개의 특수 문자
     public void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
-        String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
+        String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
         if (!password.matches(regex)) throw new InvalidPasswordFormatException();
     }
 

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ContextConfiguration(classes = AuthApplication.class)
-class MemberServiceImplTest {
+class EmailValidationTest {
 
     @Autowired
     private MemberServiceImpl memberService;

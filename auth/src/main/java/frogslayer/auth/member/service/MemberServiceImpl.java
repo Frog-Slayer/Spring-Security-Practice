@@ -1,4 +1,4 @@
 package frogslayer.auth.member.service;
 
-public class MemberServiceImpl implements MemberService{
+public class MemberServiceImpl implements MemberService {
 }

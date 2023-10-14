@@ -37,17 +37,17 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
     }
 
-    private void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
+    public void verifyPasswordFormat(String password) throws InvalidPasswordFormatException {
         String regex =  "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
         if (!password.matches(regex)) throw new InvalidPasswordFormatException();
     }
 
-    private void verifyEmailFormat(String email) throws InvalidEmailFormatException {
+    public void verifyEmailFormat(String email) throws InvalidEmailFormatException {
         if (email.isBlank()) throw new InvalidEmailFormatException();
         if (!EmailValidator.getInstance().isValid(email)) throw new InvalidEmailFormatException();
     }
 
-    private void checkEmailDuplication(String email) throws DuplicateUserException {
+    public void checkEmailDuplication(String email) throws DuplicateUserException {
         if (memberRepository.existsByEmail(email)) throw new DuplicateUserException();
     }
 }

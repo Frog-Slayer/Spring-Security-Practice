@@ -25,7 +25,7 @@ public class ExceptionController {
         return getResponseEntity(ExceptionCode.INVALID_PASSWORD_FORMAT_EXCEPTION);
     }
 
-    @ExceptionHandler(InvalidEmailFormatException.class)
+    @ExceptionHandler(NoSuchUserException.class)
     public ResponseEntity<String> handleNoSuchUserException(NoSuchUserException err){
         return getResponseEntity(ExceptionCode.NO_SUCH_USER_EXCEPTION);
     }

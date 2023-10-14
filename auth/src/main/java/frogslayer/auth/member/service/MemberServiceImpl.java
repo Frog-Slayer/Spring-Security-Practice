@@ -24,9 +24,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void signUp(Member signUpInfo) throws InvalidEmailFormatException, InvalidPasswordFormatException, DuplicateUserException{
         String email = signUpInfo.getEmail();
+        String password = signUpInfo.getPassword();
         verifyEmailFormat(email);
         checkEmailDuplication(email);
-        verifyPasswordFormat(email);
+        verifyPasswordFormat(password);
 
         Member member = Member.builder()
                 .email(signUpInfo.getEmail())

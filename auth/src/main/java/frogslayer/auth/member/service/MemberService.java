@@ -4,7 +4,6 @@ import frogslayer.auth.member.entity.Member;
 import frogslayer.auth.member.exception.exceptions.DuplicateUserException;
 import frogslayer.auth.member.exception.exceptions.InvalidEmailFormatException;
 import frogslayer.auth.member.exception.exceptions.InvalidPasswordFormatException;
-import frogslayer.auth.member.exception.exceptions.NoSuchUserException;
 
 public interface MemberService {
 

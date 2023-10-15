@@ -35,14 +35,14 @@ React
     - [ ] refresh 요청 처리
   - [ ] config
   - [ ] entity
-    - [ ] UserDetails 구현
+    - [X] UserDetails 구현
   - [ ] service
-    - [ ] UserDetailsService 구현
-      - [ ] JWT 서비스
-        - [ ] 토큰 발행
-        - [ ] 토큰에서 회원 정보 추출
-        - [ ] 토큰 유효성 검사
-        - [ ] 토큰 보내기
+    - [X] UserDetailsService 구현
+    - [X] JWT 서비스
+      - [X] 토큰 발행
+      - [X] 토큰에서 회원 정보 추출
+      - [X] 토큰 유효성 검사
+      - [X] 토큰 보내기
     - [ ] 
   - [ ] filter
     - [ ] Username-Password 인증 필터 (로그인)

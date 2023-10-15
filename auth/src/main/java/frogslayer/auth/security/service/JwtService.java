@@ -2,11 +2,15 @@ package frogslayer.auth.security.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import frogslayer.auth.member.entity.Member;
 import frogslayer.auth.member.repository.MemberRepository;
+import frogslayer.auth.security.entity.RefreshToken;
+import frogslayer.auth.security.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.swing.text.html.Option;
@@ -21,8 +25,10 @@ public class JwtService {
 
     private String secretKey = "asd19i23hj909sfua9s0fdusd90fua9023fjnh";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
-    private Integer accessTokenExpiration = 1000 * 60 * 60 * 30;//30분
-    private Integer refreshTokenExpiration = 1000 * 60 * 60 * 60 * 24 * 7; //1주일
+    private final Integer accessTokenExpiration = 1000 * 60 * 60 * 30;//30분
+
+    private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public String issueAccessToken(String username){
         Date now = new Date();
@@ -69,11 +75,8 @@ public class JwtService {
                 .build();
         response.setHeader("Set-Cookie", cookie.toString());
     }
-    public void saveRefreshToken(String username, String refreshToken){
-        //TODO Redis에 리프레시 토큰을 담아서 관리할 것.
-
-
+    public void saveRefreshToken(String username, String refreshToken) throws UsernameNotFoundException{
+        Member member = memberRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("리프레시 토큰을 발행할 사용자를 찾을 수 없습니다"));
+        refreshTokenRepository.save(new RefreshToken(refreshToken, member.getId()));
     }
-
-
 }

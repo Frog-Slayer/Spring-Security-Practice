@@ -24,6 +24,8 @@ public class Member {
     @Column(nullable = false)
     private String password;
 
-    @Column
-    private String privateData;
+    @Column (columnDefinition = "varchar(32) default 'GUEST'")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
 }

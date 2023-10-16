@@ -25,8 +25,8 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String LOGIN_URL = "/api/login";
-    private static final String REFRESH_URL = "/api/refresh";
+    private static final String LOGIN_ENDPOINT = "/api/login";
+    private static final String REFRESH_ENDPOINT = "/api/refresh";
 
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
@@ -36,12 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getRequestURI().equals(LOGIN_URL)) {
+        if (request.getRequestURI().equals(LOGIN_ENDPOINT)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (!request.getRequestURI().equals(REFRESH_URL)){
+        if (!request.getRequestURI().equals(REFRESH_ENDPOINT)){
             authenticateWithAccessToken(request, response, filterChain);
             return;
         }

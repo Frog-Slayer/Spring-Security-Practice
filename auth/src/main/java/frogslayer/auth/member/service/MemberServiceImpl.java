@@ -1,12 +1,15 @@
 package frogslayer.auth.member.service;
 
 import frogslayer.auth.member.entity.Member;
+import frogslayer.auth.member.entity.Role;
 import frogslayer.auth.member.exception.exceptions.DuplicateUserException;
 import frogslayer.auth.member.exception.exceptions.InvalidEmailFormatException;
 import frogslayer.auth.member.exception.exceptions.InvalidPasswordFormatException;
 import frogslayer.auth.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,8 +19,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
 
     @Override
-    public Member findUserByEmail(String email) throws NoSuchUserException {
-        return memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchUserException());
+    public Member findUserByEmail(String email) throws UsernameNotFoundException {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("해당하는 회원이 없습니다."));
     }
 
     @Override
@@ -30,8 +33,8 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = Member.builder()
                 .email(signUpInfo.getEmail())
+                .role(Role.MEMBER)
                 .password(signUpInfo.getPassword())
-                .privateData(signUpInfo.getPrivateData())
                 .build();
 
         memberRepository.save(member);

@@ -1,12 +1,13 @@
 package frogslayer.auth.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import frogslayer.auth.member.entity.Member;
 import frogslayer.auth.member.repository.MemberRepository;
 import frogslayer.auth.security.filter.CustomJsonAuthenticationFilter;
 import frogslayer.auth.security.filter.JwtAuthenticationFilter;
 import frogslayer.auth.security.handler.LoginFailureHandler;
 import frogslayer.auth.security.handler.LoginSuccessHandler;
+import frogslayer.auth.security.handler.oauth2.OAuth2LoginFailureHandler;
+import frogslayer.auth.security.handler.oauth2.OAuth2LoginSuccessHandler;
 import frogslayer.auth.security.repository.RefreshTokenRepository;
 import frogslayer.auth.security.service.CustomUserDetailsSerivce;
 import frogslayer.auth.security.service.JwtService;
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -95,14 +96,14 @@ public class SecurityConfig {
                 .oauth2Login((oauth2login) ->
                         oauth2login
                                 .loginPage("/login")
-                                //.successHandler(oAuth2LoginSuccessHandler)
-                                //.failureHandler(oAuth2LoginFailureHandler)
+                                .successHandler(oauth2LoginSuccessHandler())
+                                .failureHandler(oauth2LoginFailureHandler())
                                 .authorizationEndpoint((endpoint) -> endpoint
                                         .baseUri("/api/oauth2/authorization"))
                                 .redirectionEndpoint((endpoint) ->
                                         endpoint.baseUri("/api/login/oauth2/code/*"))
-                                //.userInfoEndpoint((endpoint) ->
-                                //        endpoint.userService(customOAuth2UserService))
+                                .userInfoEndpoint((endpoint) ->
+                                        endpoint.userService(oAuth2UserService))
                 )
                 .logout((logout) ->
                         logout
@@ -117,7 +118,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new AuthenticationEntryPoint() {
                             @Override
                             public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-                                response.setStatus(403);
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             }
                         })
                 );
@@ -158,6 +159,17 @@ public class SecurityConfig {
         return new LoginFailureHandler();
     }
 
+    @Bean
+    public AuthenticationFailureHandler oauth2LoginFailureHandler(){
+        return new OAuth2LoginFailureHandler();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler oauth2LoginSuccessHandler(){
+        return new OAuth2LoginSuccessHandler(jwtService, memberRepository);
+    }
+
+
     public CustomJsonAuthenticationFilter jsonAuthenticationFilter(){
         return new CustomJsonAuthenticationFilter(new ObjectMapper());
     }
@@ -165,5 +177,6 @@ public class SecurityConfig {
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
         return new JwtAuthenticationFilter(jwtService, memberRepository, refreshTokenRepository);
     }
+
 
 }

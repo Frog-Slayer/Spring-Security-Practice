@@ -9,6 +9,7 @@ import frogslayer.auth.security.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private String secretKey = "asd19i23hj909sfua9s0fdusd90fua9023fjnh";
+    @Value("${jwt.access.header}")
+    private String accessTokenHeader;
+
+    @Value("${jwt.access.expiration}")
+    private Integer accessTokenExpiration;
+
+    @Value("${jwt.refresh.header}")
+    private String refreshTokenHeader;
+
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
-    private final Integer accessTokenExpiration = 1000 * 60 * 60 * 30;//30분
 
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -44,7 +55,6 @@ public class JwtService {
                 .map(token -> token.replace("Bearer", ""));
     }
 
-
     public Optional<String> extractNameFromToken(String token){
         return Optional.ofNullable(JWT.require(Algorithm.HMAC256(secretKey))
                 .build()
@@ -54,7 +64,7 @@ public class JwtService {
     }
 
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken){
-        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader(accessTokenHeader, "Bearer " + accessToken);
     }
 
     public boolean isAccessTokenValid(String refreshToken){
@@ -86,7 +96,7 @@ public class JwtService {
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
-        response.setHeader("Set-Cookie", cookie.toString());
+        response.setHeader(refreshTokenHeader, cookie.toString());
     }
     public void saveRefreshToken(String username, String refreshToken) throws UsernameNotFoundException{
         Member member = memberRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("리프레시 토큰을 발행할 사용자를 찾을 수 없습니다"));
@@ -102,9 +112,5 @@ public class JwtService {
 
         setAccessTokenHeader(response, accessToken);
         setRefreshTokenCookie(response, refreshToken);
-
     }
-
-
-
 }

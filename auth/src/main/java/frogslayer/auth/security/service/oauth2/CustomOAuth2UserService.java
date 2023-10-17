@@ -33,10 +33,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
         OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultUserService = new DefaultOAuth2UserService();
-        OAuth2User oAuth2User = defaultUserService.loadUser(userRequest);
 
         SocialType socialType = SocialType.valueOf(userRequest.getClientRegistration().getRegistrationId());
 
+        OAuth2User oAuth2User = defaultUserService.loadUser(userRequest);
         String nameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
 

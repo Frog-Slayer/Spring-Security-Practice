@@ -5,7 +5,10 @@ import frogslayer.auth.member.entity.Member;
 import frogslayer.auth.member.repository.MemberRepository;
 import frogslayer.auth.security.filter.CustomJsonAuthenticationFilter;
 import frogslayer.auth.security.filter.JwtAuthenticationFilter;
+import frogslayer.auth.security.handler.LoginFailureHandler;
+import frogslayer.auth.security.handler.LoginSuccessHandler;
 import frogslayer.auth.security.repository.RefreshTokenRepository;
+import frogslayer.auth.security.service.CustomUserDetailsSerivce;
 import frogslayer.auth.security.service.JwtService;
 import frogslayer.auth.security.service.oauth2.CustomOAuth2UserService;
 import jakarta.servlet.ServletException;
@@ -15,15 +18,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -111,6 +125,37 @@ public class SecurityConfig {
         http.addFilterAfter(jsonAuthenticationFilter(), LogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), CustomJsonAuthenticationFilter.class);
         return http.build();
+    }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        DelegatingPasswordEncoder delegatingPasswordEncoder = (DelegatingPasswordEncoder) PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
+        return delegatingPasswordEncoder;
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new CustomUserDetailsSerivce(memberRepository);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() throws Exception {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService());
+        return new ProviderManager(daoAuthenticationProvider);
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler loginSuccessHandler(){
+        return new LoginSuccessHandler(jwtService);
+    }
+
+    @Bean
+    public AuthenticationFailureHandler loginFailureHandler(){
+        return new LoginFailureHandler();
     }
 
     public CustomJsonAuthenticationFilter jsonAuthenticationFilter(){

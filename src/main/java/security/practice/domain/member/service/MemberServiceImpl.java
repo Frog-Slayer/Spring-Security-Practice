@@ -27,10 +27,7 @@ public class MemberServiceImpl implements MemberService{
         return memberRepository.save(member);
     }
 
-    @Override
-    @Transactional
-    public boolean isDuplicatedUsername(String username) {
+    private boolean isDuplicatedUsername(String username) {
         return memberRepository.existsByUsername(username);
     }
-
 }

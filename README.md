@@ -12,6 +12,8 @@ A repository for JWT authentication using spring security
     + [ ] Service
       + [ ] Interface
         + [ ] 회원가입
+          + [ ] 이메일 인증
+          + [ ] DB에 회원 정보를 추가
         + [ ] 중복확인
       + [ ] Implementation
     

@@ -13,7 +13,7 @@ function SignupForm() {
             password: password
         };
 
-        axios.post('localhost:8080/member/register', body)
+        axios.post('http://localhost:8080/member/register', body)
             .then((res) => {
                 if (res.status === 201) {
                     navigate('/login')

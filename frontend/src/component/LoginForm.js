@@ -13,14 +13,14 @@ function LoginForm() {
             password: password
         };
 
-        axios.post('localhost:8080/member/login', body)
+        axios.post('http://localhost:8080/member/register', body)
             .then((res) => {
                 if (res.status === 200) {
                     console.log("yes")
                 }
             })
             .catch((res) => {
-                console.log("??");
+                console.log(res);
             })
     }
 

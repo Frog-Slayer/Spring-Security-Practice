@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class JwtServiceImpl implements JwtService{
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secretKey));
     }
 
+    @Transactional
     @Override
     public String generateAccessToken(String username) {
         Date now = new Date();
@@ -48,6 +50,7 @@ public class JwtServiceImpl implements JwtService{
                 .compact();
     }
 
+    @Transactional
     @Override
     public String generateRefreshToken() {
         Date now = new Date();
@@ -59,6 +62,7 @@ public class JwtServiceImpl implements JwtService{
                 .compact();
     }
 
+    @Transactional
     @Override
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER))
@@ -66,6 +70,7 @@ public class JwtServiceImpl implements JwtService{
                 .map(token -> token.replace(BEARER, ""));
     }
 
+    @Transactional
     @Override
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getCookies())
@@ -75,6 +80,7 @@ public class JwtServiceImpl implements JwtService{
                 .map(Cookie::getValue);
     }
 
+    @Transactional
     @Override
     public Optional<String> extractName(String accessToken) {
         try {
@@ -86,17 +92,20 @@ public class JwtServiceImpl implements JwtService{
         }
     }
 
+    @Transactional
     @Override
     public Jws<Claims> validateToken(String token) throws Exception {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
     }
 
+    @Transactional
     @Override
     public void setAccessToken(HttpServletResponse response, String accessToken) {
         accessToken = BEARER + accessToken;
         response.setHeader(AUTHORIZATION_HEADER, accessToken);
     }
 
+    @Transactional
     @Override
     public void setRefreshToken(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)

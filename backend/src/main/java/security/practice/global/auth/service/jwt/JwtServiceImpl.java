@@ -1,18 +1,17 @@
 package security.practice.global.auth.service.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -77,12 +76,18 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Optional<String> extractName(String accessToken) {
-        return Optional.empty();
+        try {
+            Jws<Claims> claims = validateToken(accessToken);
+            return Optional.of(claims.getPayload().getSubject());
+        }
+        catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public boolean validateToken(String token) {
-        return false;
+    public Jws<Claims> validateToken(String token) throws Exception {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
     }
 
     @Override

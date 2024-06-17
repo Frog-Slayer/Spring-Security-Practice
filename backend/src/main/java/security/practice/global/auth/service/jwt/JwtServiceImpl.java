@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Service
 public class JwtServiceImpl implements JwtService{
 
-    public static final String BEARER = "Bearer";
+    public static final String BEARER = "Bearer ";
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "Refresh";
 
@@ -92,11 +93,19 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public void setAccessToken(HttpServletResponse response, String accessToken) {
-
+        accessToken = BEARER + accessToken;
+        response.setHeader(AUTHORIZATION_HEADER, accessToken);
     }
 
     @Override
     public void setRefreshToken(HttpServletResponse response, String refreshToken) {
-
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .maxAge(-1)
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(true)
+                .build();
+        response.setHeader("Set-Cookie", cookie.toString());
     }
 }

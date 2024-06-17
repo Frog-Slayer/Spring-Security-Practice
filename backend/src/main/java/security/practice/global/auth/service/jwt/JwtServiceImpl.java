@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class JwtServiceImpl implements JwtService{
@@ -36,8 +37,8 @@ public class JwtServiceImpl implements JwtService{
     public String generateAccessToken(String username) {
         Date now = new Date();
         return Jwts.builder()
-                .claim("sub", username)
-                .signWith(secretKey)
+                .subject(username)
+                .signWith(secretKey, Jwts.SIG.HS512)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenExpiration))
                 .compact();
@@ -45,7 +46,13 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public String generateRefreshToken() {
-        return "";
+        Date now = new Date();
+        return Jwts.builder()
+                .claim("sub", UUID.randomUUID())
+                .signWith(secretKey, Jwts.SIG.HS512)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + accessTokenExpiration))
+                .compact();
     }
 
     @Override

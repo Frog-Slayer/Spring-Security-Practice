@@ -1,5 +1,4 @@
 spring:
-
   h2: #H2 Configuration
     console:
       enabled: true
@@ -30,3 +29,8 @@ logging:
         type:
           descriptor:
             sql: trace
+
+jwt:
+  secret-key: 909234whsdfjlag1asda903ihasf9as0f1
+  access-token-expiration: 1000 * 60 * 60 * 2
+  refresh-token-expiration: 1000 * 60 * 60

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +23,7 @@ public class JwtServiceImpl implements JwtService{
 
     public static final String BEARER = "Bearer";
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "Refresh";
 
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -64,7 +68,11 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        return Optional.empty();
+        return Optional.ofNullable(request.getCookies())
+                .flatMap(cookies -> Arrays.stream(cookies)
+                        .filter(e -> e.getName().equals(REFRESH_TOKEN_COOKIE_NAME))
+                        .findAny())
+                .map(Cookie::getValue);
     }
 
     @Override

@@ -57,7 +57,9 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Optional<String> extractAccessToken(HttpServletRequest request) {
-        return Optional.empty();
+        return Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER))
+                .filter(token -> token.startsWith(BEARER))
+                .map(token -> token.replace(BEARER, ""));
     }
 
     @Override

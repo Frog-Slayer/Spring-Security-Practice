@@ -55,7 +55,7 @@ public class JwtServiceImpl implements JwtService{
                 .claim("sub", UUID.randomUUID())
                 .signWith(secretKey, Jwts.SIG.HS512)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + accessTokenExpiration))
+                .expiration(new Date(now.getTime() + refreshTokenExpiration))
                 .compact();
     }
 

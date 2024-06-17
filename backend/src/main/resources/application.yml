@@ -31,6 +31,6 @@ logging:
             sql: trace
 
 jwt:
-  secret-key: 909234whsdfjlag1asda903ihasf9as0f1
-  access-token-expiration: 1000 * 60 * 60 * 2
-  refresh-token-expiration: 1000 * 60 * 60
+  secret-key: 91sf8ha089v909asa9fhj09234whsdfjlag1asda903ihasf9as0219ha09shf092hf8ghbasefg0293hf0asdhf0h2a309fhaw0sehf89a23whf08f1
+  access-token-expiration: 7200000
+  refresh-token-expiration: 86400000

@@ -25,7 +25,7 @@ public class JsonUsernamePasswordAuthenticationFilter extends AbstractAuthentica
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
 
-    protected JsonUsernamePasswordAuthenticationFilter() {
+    public JsonUsernamePasswordAuthenticationFilter() {
         super(DEFAULT_FILTER_PROCESSES_URL);
     }
 

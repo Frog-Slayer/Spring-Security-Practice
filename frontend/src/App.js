@@ -1,10 +1,10 @@
-import LoginForm from './component/LoginForm';
+import SignupForm from './component/SignupForm';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <LoginForm></LoginForm>
+        <SignupForm></SignupForm>
       </header>
     </div>
   );

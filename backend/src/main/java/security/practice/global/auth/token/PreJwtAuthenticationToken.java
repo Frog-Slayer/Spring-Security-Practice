@@ -7,17 +7,17 @@ import java.util.Collection;
 
 public class PreJwtAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final Object principal;
+    private final String principal;
     private final Object credentials;
 
-    public PreJwtAuthenticationToken(Object principal, String credentials) {
+    public PreJwtAuthenticationToken(String principal, String credentials) {
         super(null);
         setAuthenticated(false);
         this.principal = principal;
         this.credentials = credentials;
     }
 
-    public PreJwtAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
+    public PreJwtAuthenticationToken(String principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         setAuthenticated(true);
         this.principal = principal;
@@ -30,7 +30,7 @@ public class PreJwtAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
+    public String getPrincipal() {
         return this.principal;
     }
 }

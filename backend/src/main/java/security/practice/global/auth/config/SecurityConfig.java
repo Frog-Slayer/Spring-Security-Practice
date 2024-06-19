@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,9 +24,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import security.practice.domain.member.repository.MemberRepository;
 import security.practice.global.auth.filter.JsonUsernamePasswordAuthenticationFilter;
 import security.practice.global.auth.filter.JwtAuthenticationFilter;
+import security.practice.global.auth.handler.JwtAuthenticationFailureHandler;
 import security.practice.global.auth.handler.LoginSuccessHandler;
+import security.practice.global.auth.provider.JwtAuthenticationProvider;
 import security.practice.global.auth.service.CustomUserDetailsService;
 import security.practice.global.auth.service.jwt.JwtService;
+import security.practice.global.auth.utils.FilterSkipMatcher;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -90,7 +95,11 @@ public class SecurityConfig {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userDetailsService());
-        return new ProviderManager(daoAuthenticationProvider);
+
+        JwtAuthenticationProvider jwtAuthenticationProvider = new JwtAuthenticationProvider(jwtService);
+        jwtAuthenticationProvider.setUserDetailsService(userDetailsService());
+
+        return new ProviderManager(daoAuthenticationProvider, jwtAuthenticationProvider);
     }
 
     @Bean
@@ -99,6 +108,10 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtAuthenticationFailureHandler jwtAuthenticationFailureHandler(){
+        return new JwtAuthenticationFailureHandler();
+    }
+
     public JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordAuthenticationFilter() throws Exception {
         JsonUsernamePasswordAuthenticationFilter filter = new JsonUsernamePasswordAuthenticationFilter();
 
@@ -108,8 +121,16 @@ public class SecurityConfig {
         return filter;
     }
 
-    @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception{
-        return new JwtAuthenticationFilter(memberRepository, jwtService);
+        List<String> skipList = new ArrayList<>();
+        skipList.add("/login");
+        skipList.add("/member/register");
+
+        FilterSkipMatcher skipMatcher = new FilterSkipMatcher(skipList);
+
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(skipMatcher, jwtService);
+        filter.setAuthenticationManager(authenticationManager());
+        filter.setAuthenticationFailureHandler(jwtAuthenticationFailureHandler());
+        return filter;
     }
 }

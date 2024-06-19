@@ -1,6 +1,7 @@
 package security.practice.domain.member.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
@@ -17,11 +18,12 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/register")
-    public void signUp(@RequestBody MemberJoinDto joinDto) throws Exception {
+    public ResponseEntity<Void> signUp(@RequestBody MemberJoinDto joinDto) throws Exception {
         memberService.joinMember(joinDto);
+        return new ResponseEntity<>(HttpStatusCode.valueOf(201));
     }
 
-    @GetMapping("/authenticated")
+    @GetMapping("/test")
     public ResponseEntity<String> authenticatedApi() {
         log.info("hello");
         return new ResponseEntity<>("hello", HttpStatusCode.valueOf(200));

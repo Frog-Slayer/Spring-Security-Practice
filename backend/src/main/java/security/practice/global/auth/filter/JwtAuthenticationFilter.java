@@ -4,51 +4,43 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.OncePerRequestFilter;
-import security.practice.domain.member.entity.Member;
-import security.practice.domain.member.repository.MemberRepository;
-import security.practice.global.auth.entity.CustomUserDetails;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import security.practice.global.auth.service.jwt.JwtService;
+import security.practice.global.auth.token.JwtAuthenticationToken;
+import security.practice.global.auth.token.PreJwtAuthenticationToken;
 
 import java.io.IOException;
 
-@RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+@Slf4j
+public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private final MemberRepository memberRepository;
     private final JwtService jwtService;
 
+    public JwtAuthenticationFilter(RequestMatcher requestMatcher, JwtService jwtService) {
+        super(requestMatcher);
+        this.jwtService = jwtService;
+    }
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestUri = request.getRequestURI();
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        String accessToken = jwtService.extractAccessToken(request)
+                .orElseThrow(() -> new AuthenticationServiceException("No access token"));
 
-        if (requestUri.equals("/login")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        authenticateAccessToken(request);
-        filterChain.doFilter(request, response);
+        Authentication preAuthentication = new PreJwtAuthenticationToken(accessToken, null);
+        return this.getAuthenticationManager().authenticate(preAuthentication);
     }
 
-    private void authenticateAccessToken(HttpServletRequest request) {
-        jwtService.extractAccessToken(request)
-                .flatMap(jwtService::extractName)
-                .flatMap(memberRepository::findByUsername)
-                .ifPresent(this::saveAuthentication);
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+
+        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authResult;
+        SecurityContextHolder.getContext().setAuthentication(jwtAuthenticationToken);
+        chain.doFilter(request, response);
     }
-
-    private void saveAuthentication(Member member) {
-        CustomUserDetails customUserDetails = new CustomUserDetails(member);
-
-        Authentication authentication
-                = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
 }

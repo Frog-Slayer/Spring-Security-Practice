@@ -13,7 +13,6 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import security.practice.global.auth.service.jwt.JwtService;
 import security.practice.global.auth.token.JwtAuthenticationToken;
-import security.practice.global.auth.token.PreJwtAuthenticationToken;
 
 import java.io.IOException;
 
@@ -32,7 +31,7 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
         String accessToken = jwtService.extractAccessToken(request)
                 .orElseThrow(() -> new AuthenticationServiceException("No access token"));
 
-        Authentication preAuthentication = new PreJwtAuthenticationToken(accessToken, null);
+        Authentication preAuthentication = JwtAuthenticationToken.unAuthenticated(accessToken, null);
         return this.getAuthenticationManager().authenticate(preAuthentication);
     }
 

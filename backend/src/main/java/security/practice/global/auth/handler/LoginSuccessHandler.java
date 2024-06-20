@@ -28,6 +28,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info("refresh token: {}", refreshToken);
 
         jwtService.setAccessToken(response, accessToken);
-        jwtService.setRefreshToken(response, refreshToken);
+        jwtService.setRefreshToken(response, refreshToken, username);
     }
 }

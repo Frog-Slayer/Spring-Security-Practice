@@ -18,5 +18,8 @@ public interface JwtService {
     Jws<Claims> validateToken(String token) throws Exception;
 
     void setAccessToken(HttpServletResponse response, String accessToken);
-    void setRefreshToken(HttpServletResponse response, String refreshToken);
+    void setRefreshToken(HttpServletResponse response, String refreshToken, String username);
+
+    void removeRefreshToken(String refreshToken);
+    String getUsernameByRefreshToken(String refreshToken) throws Exception;
 }

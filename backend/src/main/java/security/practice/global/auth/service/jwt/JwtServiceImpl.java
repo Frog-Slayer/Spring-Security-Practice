@@ -7,9 +7,12 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+import security.practice.global.auth.utils.RedisUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,12 +21,13 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class JwtServiceImpl implements JwtService{
 
-    public static final String BEARER = "Bearer ";
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String REFRESH_TOKEN_COOKIE_NAME = "Refresh";
+    private static final String BEARER = "Bearer ";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "Refresh";
 
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -32,9 +36,11 @@ public class JwtServiceImpl implements JwtService{
     private long refreshTokenExpiration;
 
     private final SecretKey secretKey;
+    private final RedisUtils redisUtils;
 
-    public JwtServiceImpl(@Value("${jwt.secret-key}") String secretKey) {
+    public JwtServiceImpl(@Value("${jwt.secret-key}") String secretKey, RedisUtils redisUtils) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        this.redisUtils = redisUtils;
     }
 
     @Override
@@ -68,6 +74,7 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
+        log.info("extractRefreshToken");
         return Optional.ofNullable(request.getCookies())
                 .flatMap(cookies -> Arrays.stream(cookies)
                         .filter(e -> e.getName().equals(REFRESH_TOKEN_COOKIE_NAME))
@@ -98,7 +105,7 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
-    public void setRefreshToken(HttpServletResponse response, String refreshToken) {
+    public void setRefreshToken(HttpServletResponse response, String refreshToken, String username) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
                 .maxAge(-1)
                 .path("/")
@@ -107,5 +114,22 @@ public class JwtServiceImpl implements JwtService{
                 .httpOnly(true)
                 .build();
         response.setHeader("Set-Cookie", cookie.toString());
+        saveRefreshToken(refreshToken, username);
     }
+
+    private void saveRefreshToken(String refreshToken, String username) {
+        redisUtils.set(refreshToken, username, refreshTokenExpiration);
+    }
+
+    @Override
+    public void removeRefreshToken(String refreshToken){
+        redisUtils.delete(refreshToken);
+    }
+
+    @Override
+    public String getUsernameByRefreshToken(String refreshToken) throws Exception {
+        validateToken(refreshToken);
+        return redisUtils.get(refreshToken);
+    }
+
 }

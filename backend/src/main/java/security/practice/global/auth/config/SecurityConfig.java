@@ -24,11 +24,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import security.practice.domain.member.repository.MemberRepository;
 import security.practice.global.auth.filter.JsonUsernamePasswordAuthenticationFilter;
 import security.practice.global.auth.filter.JwtAuthenticationFilter;
-import security.practice.global.auth.handler.JwtAuthenticationFailureHandler;
+import security.practice.global.auth.filter.RefreshTokenAuthenticationFilter;
 import security.practice.global.auth.handler.LoginSuccessHandler;
 import security.practice.global.auth.provider.JwtAuthenticationProvider;
+import security.practice.global.auth.provider.RefreshTokenAuthenticationProvider;
 import security.practice.global.auth.service.CustomUserDetailsService;
 import security.practice.global.auth.service.jwt.JwtService;
+import security.practice.global.auth.token.RefreshTokenAuthenticationToken;
 import security.practice.global.auth.utils.FilterSkipMatcher;
 
 import java.util.ArrayList;
@@ -75,6 +77,7 @@ public class SecurityConfig {
 
         http.addFilterAfter(jsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), JsonUsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(refreshTokenAuthenticationFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
 
@@ -99,17 +102,15 @@ public class SecurityConfig {
         JwtAuthenticationProvider jwtAuthenticationProvider = new JwtAuthenticationProvider(jwtService);
         jwtAuthenticationProvider.setUserDetailsService(userDetailsService());
 
-        return new ProviderManager(daoAuthenticationProvider, jwtAuthenticationProvider);
+        RefreshTokenAuthenticationProvider refreshTokenAuthenticationProvider = new RefreshTokenAuthenticationProvider(jwtService);
+        refreshTokenAuthenticationProvider.setUserDetailsService(userDetailsService());
+
+        return new ProviderManager(daoAuthenticationProvider, jwtAuthenticationProvider, refreshTokenAuthenticationProvider);
     }
 
     @Bean
     public AuthenticationSuccessHandler loginSuccessHandler(){
         return new LoginSuccessHandler(jwtService);
-    }
-
-    @Bean
-    public JwtAuthenticationFailureHandler jwtAuthenticationFailureHandler(){
-        return new JwtAuthenticationFailureHandler();
     }
 
     public JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordAuthenticationFilter() throws Exception {
@@ -125,12 +126,18 @@ public class SecurityConfig {
         List<String> skipList = new ArrayList<>();
         skipList.add("/login");
         skipList.add("/member/register");
+        skipList.add("/refresh");
 
         FilterSkipMatcher skipMatcher = new FilterSkipMatcher(skipList);
 
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(skipMatcher, jwtService);
         filter.setAuthenticationManager(authenticationManager());
-        filter.setAuthenticationFailureHandler(jwtAuthenticationFailureHandler());
+        return filter;
+    }
+
+    public RefreshTokenAuthenticationFilter refreshTokenAuthenticationFilter() throws Exception {
+        RefreshTokenAuthenticationFilter filter = new RefreshTokenAuthenticationFilter(jwtService);
+        filter.setAuthenticationManager(authenticationManager());
         return filter;
     }
 }
